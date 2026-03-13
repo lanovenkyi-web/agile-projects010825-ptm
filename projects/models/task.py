@@ -1,32 +1,68 @@
 from django.core.validators import MinLengthValidator
 from django.db import models
 
-from projects.models.project import Project
-from projects.models.teg import Teg
-
 
 class Task(models.Model):
-    STATUS_CHOICES = [
-        ("new", "New"),
-        ("in_progress", "In Progress"),
-        ("done", "Done"),
-        ("canceled", "Canceled"),
-    ]
 
-    PRIORITY_CHOICES = [
-        ("low", "Low"),
-        ("medium", "Medium"),
-        ("high", "High"),
-    ]
+    class Status(models.IntegerChoices):
+        new = 1,"New"
+        in_progress = 2,"In progress"
+        done = 3,"Done"
+        cancelled = 4,"Cancelled"
 
-    title = models.CharField(unique=True, max_length=100, validators=[MinLengthValidator(10)], null=False, blank=False)
-    description = models.TextField(null=True, blank=True)
-    status = models.CharField(max_length=15, choices=STATUS_CHOICES, default="new")
-    priority = models.CharField(max_length=15, choices=PRIORITY_CHOICES)
-    project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name="tasks")
-    created_at = models.DateField(auto_now_add=True)
-    updated_at = models.DateField(auto_now=True)
+    class Priority(models.IntegerChoices):
+        low = 1,"Low"
+        medium = 2,"Medium"
+        high = 3,"High"
+        crirtical = 4,"Critical"
 
-    tags = models.ManyToManyField("Tag", blank=True, related_name="tasks")
-    due_date = models.DateTimeField(null=True, blank=True)
 
+    name = models.CharField(
+        max_length=100,
+        unique=True,
+        validators=[MinLengthValidator(10)],
+        verbose_name="Название задачи"
+    ),
+    description = models.TextField(
+        blank=True,
+        null=True,
+        verbose_name="Описание"
+    )
+    status = models.PositiveSmallIntegerField(
+        choices=Status,
+        default=Status.new,
+        verbose_name="Статус"
+    ),
+    priority = models.PositiveSmallIntegerField(
+        choices=Priority,
+        verbose_name="Приоритет"
+    ),
+    project = models.ForeignKey(
+        "Project",
+        related_name="tasks",
+        on_delete=models.CASCADE,
+        verbose_name="Проект"
+    )
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name="Дата создания"
+    ),
+    updated_at = models.DateTimeField(
+        auto_now=True,
+        verbose_name="Дата обновления"
+    ),
+    deleted_at = models.DateTimeField(
+        blank=True,
+        null=True,
+        verbose_name="Дата удаления"
+    )
+    due_date = models.DateTimeField(
+        blank=True,
+        null=True,
+    )
+
+    tags = models.ManyToManyField(
+        "Tag",
+        blank=True,
+        related_name="tasks"
+    )
